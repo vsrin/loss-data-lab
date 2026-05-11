@@ -106,7 +106,7 @@ with right_col:
 
     with btn_col:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Shuffle", use_container_width=True, icon=":material/shuffle:"):
+        if st.button("Shuffle", use_container_width=True):
             st.session_state["seed"] = random.randint(100, 99999)
             st.rerun()
 
