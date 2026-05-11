@@ -153,21 +153,25 @@ if "results" in st.session_state:
     m3.metric("Total Rows", "2,279")
     m4.metric("Seed Used", used_seed)
 
+    # Build Excel buffer once — reused in both download locations
+    excel_buf = io.BytesIO()
+    with pd.ExcelWriter(
+        excel_buf, engine="openpyxl",
+        date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD",
+    ) as writer:
+        dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
+        _apply_cell_formats(writer.sheets["Loss Transactions"])
+    excel_buf.seek(0)
+
+    csv_buf = io.StringIO()
+    manifest.to_csv(csv_buf, index=False)
+
     res_left, res_right = st.columns([1, 1], gap="large")
 
     with res_left:
         st.dataframe(by_label, hide_index=True, use_container_width=True)
 
     with res_right:
-        excel_buf = io.BytesIO()
-        with pd.ExcelWriter(
-            excel_buf, engine="openpyxl",
-            date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD",
-        ) as writer:
-            dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
-            _apply_cell_formats(writer.sheets["Loss Transactions"])
-        excel_buf.seek(0)
-
         st.download_button(
             "Download Dirty Dataset (.xlsx)",
             data=excel_buf,
@@ -177,10 +181,6 @@ if "results" in st.session_state:
             icon=":material/download:",
             help="Distribute this file to students.",
         )
-
-        csv_buf = io.StringIO()
-        manifest.to_csv(csv_buf, index=False)
-
         st.download_button(
             "Download Answer Key (.csv)",
             data=csv_buf.getvalue().encode(),
@@ -190,16 +190,39 @@ if "results" in st.session_state:
             icon=":material/key:",
             help="Keep this — records every injected error for grading.",
         )
-
         st.caption(f"Seed **{used_seed}** — use this number anytime to reproduce this exact version.")
 
     st.divider()
-    st.markdown("#### Dataset Preview")
-    st.caption(
-        f"Showing all {len(dirty_df):,} rows. "
-        "Errors are scattered throughout — scroll to explore. "
-        "The Answer Key identifies every affected row by number."
-    )
+
+    prev_head, dl_left, dl_right = st.columns([4, 1, 1])
+    with prev_head:
+        st.markdown("#### Dataset Preview")
+        st.caption(
+            f"Showing all {len(dirty_df):,} rows — scroll to explore. "
+            "The Answer Key identifies every affected row by number."
+        )
+    with dl_left:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.download_button(
+            "Dirty Dataset",
+            data=excel_buf,
+            file_name=f"Loss_Transactions_DIRTY_seed{used_seed}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+            icon=":material/download:",
+        )
+    with dl_right:
+        st.markdown("<br>", unsafe_allow_html=True)
+        csv_buf2 = io.StringIO()
+        manifest.to_csv(csv_buf2, index=False)
+        st.download_button(
+            "Answer Key",
+            data=csv_buf2.getvalue().encode(),
+            file_name=f"error_manifest_seed{used_seed}.csv",
+            mime="text/csv",
+            use_container_width=True,
+            icon=":material/key:",
+        )
 
     # Format date columns as strings for clean display (avoids timestamp rendering)
     preview_df = dirty_df.copy()
