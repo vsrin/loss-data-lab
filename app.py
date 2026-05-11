@@ -224,11 +224,33 @@ if "results" in st.session_state:
             icon=":material/key:",
         )
 
-    # Format date columns as strings for clean display (avoids timestamp rendering)
+    # Format date columns as strings for clean display
     preview_df = dirty_df.copy()
     for col in ("Accident Date", "Transaction Date"):
         preview_df[col] = preview_df[col].apply(
             lambda v: v.strftime("%m-%d-%y") if (hasattr(v, "strftime") and not pd.isna(v)) else v
         )
 
-    st.dataframe(preview_df, hide_index=False, use_container_width=True, height=400)
+    # Filter dropdown
+    error_options = ["All rows"] + sorted(manifest["error_label"].unique().tolist())
+    filter_col, count_col = st.columns([3, 1])
+    with filter_col:
+        selected_error = st.selectbox(
+            "Filter by error type",
+            options=error_options,
+            label_visibility="collapsed",
+        )
+    with count_col:
+        if selected_error == "All rows":
+            st.metric("Rows shown", f"{len(preview_df):,}")
+        else:
+            matched_rows = manifest[manifest["error_label"] == selected_error]["row_index"].tolist()
+            st.metric("Rows shown", len(matched_rows))
+
+    if selected_error == "All rows":
+        display_df = preview_df
+    else:
+        matched_rows = manifest[manifest["error_label"] == selected_error]["row_index"].tolist()
+        display_df = preview_df.loc[matched_rows]
+
+    st.dataframe(display_df, hide_index=False, use_container_width=True, height=400)
