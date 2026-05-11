@@ -1,0 +1,6 @@
+# Generated outputs — produced by the workflow, not committed
+Loss_Transactions_DIRTY.xlsx
+error_manifest.csv
+
+# macOS
+.DS_Store

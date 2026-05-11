@@ -1,0 +1,39 @@
+name: Generate Dirty Dataset
+
+on:
+  workflow_dispatch:
+    inputs:
+      random_seed:
+        description: 'Random seed — change each semester to get a fresh error distribution'
+        required: true
+        default: '42'
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas openpyxl
+
+      - name: Run error injector
+        env:
+          RANDOM_SEED: ${{ inputs.random_seed }}
+        run: python3 inject_errors.py
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-seed-${{ inputs.random_seed }}
+          path: |
+            Loss_Transactions_DIRTY.xlsx
+            error_manifest.csv
