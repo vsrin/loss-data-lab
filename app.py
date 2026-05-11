@@ -244,13 +244,13 @@ if "results" in st.session_state:
         if selected_error == "All rows":
             st.metric("Rows shown", f"{len(preview_df):,}")
         else:
-            matched_rows = manifest[manifest["error_label"] == selected_error]["row_index"].tolist()
+            matched_rows = (manifest[manifest["error_label"] == selected_error]["excel_row"] - 4).tolist()
             st.metric("Rows shown", len(matched_rows))
 
     if selected_error == "All rows":
         display_df = preview_df
     else:
-        matched_rows = manifest[manifest["error_label"] == selected_error]["row_index"].tolist()
+        matched_rows = (manifest[manifest["error_label"] == selected_error]["excel_row"] - 4).tolist()
         display_df = preview_df.loc[matched_rows]
 
     st.dataframe(display_df, hide_index=False, use_container_width=True, height=400)
