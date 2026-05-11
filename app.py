@@ -10,245 +10,210 @@ from inject_errors import DEFAULT_RATES, ERROR_LABELS, generate
 
 st.set_page_config(
     page_title="Loss Data Lab",
-    page_icon="📊",
-    layout="centered",
+    page_icon="",
+    layout="wide",
 )
 
-# ── Custom CSS ─────────────────────────────────────────────────────────────────
+# ── Font Awesome + CSS ─────────────────────────────────────────────────────────
 
 st.markdown("""
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 <style>
-/* Hero banner */
-.hero {
-    background: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
-    border-radius: 16px;
-    padding: 2.5rem 2rem 2rem 2rem;
-    color: white;
-    margin-bottom: 2rem;
-}
-.hero h1 { color: white; font-size: 2.1rem; margin-bottom: 0.3rem; }
-.hero p  { color: rgba(255,255,255,0.88); font-size: 1.05rem; margin: 0; }
+/* ── Global resets ── */
+section[data-testid="stMain"] > div   { padding-top: 0.6rem !important; }
+section[data-testid="stSidebar"] > div { padding-top: 0.8rem !important; }
+.block-container { padding-top: 0.6rem !important; padding-bottom: 0.5rem !important; }
+div[data-testid="stVerticalBlock"] { gap: 0.4rem !important; }
 
-/* Section cards */
-.card {
-    background: #EFF6FF;
-    border-left: 4px solid #2563EB;
-    border-radius: 10px;
-    padding: 1.2rem 1.4rem;
-    margin-bottom: 1rem;
+/* ── Sidebar brand ── */
+.brand {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 0.6rem;
 }
-.card h3 { margin-top: 0; color: #1E3A8A; font-size: 1rem; }
-.card p, .card li { font-size: 0.93rem; color: #374151; margin: 0.2rem 0; }
-
-/* Step badges */
-.step {
-    display: inline-block;
-    background: #2563EB;
-    color: white;
-    font-weight: 700;
-    font-size: 0.8rem;
-    border-radius: 50%;
-    width: 1.5rem;
-    height: 1.5rem;
-    text-align: center;
-    line-height: 1.5rem;
-    margin-right: 0.5rem;
-}
-
-/* Error type table */
-.err-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.err-table th {
+.brand-icon {
     background: #2563EB; color: white;
-    padding: 0.5rem 0.8rem; text-align: left;
+    border-radius: 8px; width: 2rem; height: 2rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
 }
-.err-table td { padding: 0.45rem 0.8rem; border-bottom: 1px solid #DBEAFE; }
-.err-table tr:nth-child(even) td { background: #EFF6FF; }
-.badge-easy   { background:#D1FAE5; color:#065F46; border-radius:4px; padding:2px 7px; font-size:0.78rem; }
-.badge-medium { background:#FEF3C7; color:#92400E; border-radius:4px; padding:2px 7px; font-size:0.78rem; }
-.badge-hard   { background:#FEE2E2; color:#991B1B; border-radius:4px; padding:2px 7px; font-size:0.78rem; }
+.brand-title { font-size: 1.05rem; font-weight: 700; color: #1E293B; line-height: 1.2; }
+.brand-sub   { font-size: 0.72rem; color: #64748B; }
 
-/* Section header rule */
-.section-title {
-    font-size: 1.1rem; font-weight: 700;
-    color: #1E3A8A; margin: 1.5rem 0 0.8rem 0;
-    border-bottom: 2px solid #BFDBFE; padding-bottom: 0.3rem;
+/* ── Sidebar sections ── */
+.sb-section { margin-bottom: 0.8rem; }
+.sb-heading {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #94A3B8; margin-bottom: 0.4rem;
 }
+.sb-body { font-size: 0.82rem; color: #374151; line-height: 1.55; }
+
+/* ── Steps ── */
+.step-row { display: flex; align-items: flex-start; gap: 0.55rem; margin-bottom: 0.35rem; }
+.step-num {
+    background: #2563EB; color: white; font-size: 0.65rem; font-weight: 700;
+    border-radius: 50%; width: 1.2rem; height: 1.2rem; min-width: 1.2rem;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+.step-text { font-size: 0.82rem; color: #374151; line-height: 1.45; }
+
+/* ── Error reference table ── */
+.err-tbl { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 0.3rem; }
+.err-tbl th {
+    background: #1E3A8A; color: white;
+    padding: 0.3rem 0.5rem; text-align: left; font-weight: 600;
+}
+.err-tbl td { padding: 0.28rem 0.5rem; border-bottom: 1px solid #DBEAFE; color: #374151; }
+.err-tbl tr:nth-child(even) td { background: #F0F7FF; }
+.lv-e { color: #059669; font-weight: 600; font-size: 0.72rem; }
+.lv-m { color: #D97706; font-weight: 600; font-size: 0.72rem; }
+.lv-h { color: #DC2626; font-weight: 600; font-size: 0.72rem; }
+
+/* ── Main panel ── */
+.panel-header {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.panel-icon {
+    background: #EFF6FF; color: #2563EB;
+    border-radius: 6px; width: 1.8rem; height: 1.8rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+}
+.panel-title { font-size: 1.1rem; font-weight: 700; color: #1E293B; }
+
+/* ── Result summary cards ── */
+.result-cards { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+.r-card {
+    flex: 1; min-width: 130px;
+    background: #EFF6FF; border: 1px solid #BFDBFE;
+    border-radius: 8px; padding: 0.5rem 0.8rem;
+    text-align: center;
+}
+.r-card-num { font-size: 1.4rem; font-weight: 700; color: #2563EB; line-height: 1.2; }
+.r-card-lbl { font-size: 0.72rem; color: #64748B; }
+
+hr.sb-rule { border: none; border-top: 1px solid #E2E8F0; margin: 0.6rem 0; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Hero ───────────────────────────────────────────────────────────────────────
+# ── Sidebar ────────────────────────────────────────────────────────────────────
 
-st.markdown("""
-<div class="hero">
-    <h1>📊 Loss Data Lab</h1>
-    <p>
-        A classroom tool for teaching data quality and AI-assisted data cleaning.
-        Generate a deliberately messy insurance dataset, hand it to your students,
-        and use the answer key to grade their corrections.
-    </p>
-</div>
-""", unsafe_allow_html=True)
+with st.sidebar:
 
-# ── About ──────────────────────────────────────────────────────────────────────
-
-st.markdown('<div class="section-title">About this tool</div>', unsafe_allow_html=True)
-
-c1, c2 = st.columns(2)
-
-with c1:
+    # Brand
     st.markdown("""
-    <div class="card">
-        <h3>🎯 What it does</h3>
-        <p>
-            Takes a clean insurance loss transaction dataset (2,279 real-world transactions
-            across 400 claims, 2020–2025) and injects deliberate data quality errors —
-            the same kinds of problems that appear in production systems every day.
-        </p>
-        <p style="margin-top:0.6rem;">
-            Students use AI tools (ChatGPT, Claude, Python/pandas, OpenRefine) to find
-            and fix the errors. The <strong>answer key</strong> records every injected
-            error so grading is objective.
-        </p>
+    <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+            <div class="brand-title">Loss Data Lab</div>
+            <div class="brand-sub">Data Quality Classroom Tool</div>
+        </div>
+    </div>
+    <hr class="sb-rule">
+    """, unsafe_allow_html=True)
+
+    # About
+    st.markdown("""
+    <div class="sb-section">
+        <div class="sb-heading"><i class="fa-solid fa-circle-info" style="margin-right:4px"></i>About</div>
+        <div class="sb-body">
+            Injects deliberate data quality errors into a clean insurance loss
+            transaction dataset — <strong>2,279 transactions</strong> across
+            <strong>400 claims</strong> (2020–2025). Students use AI tools to
+            detect and fix the errors; the answer key enables objective grading.
+        </div>
+    </div>
+    <hr class="sb-rule">
+    """, unsafe_allow_html=True)
+
+    # How to use
+    st.markdown("""
+    <div class="sb-section">
+        <div class="sb-heading"><i class="fa-solid fa-list-ol" style="margin-right:4px"></i>How to Use</div>
+        <div class="step-row"><div class="step-num">1</div>
+            <div class="step-text">Enter or randomize a <strong>seed number</strong></div></div>
+        <div class="step-row"><div class="step-num">2</div>
+            <div class="step-text">Click <strong>Generate Dataset</strong></div></div>
+        <div class="step-row"><div class="step-num">3</div>
+            <div class="step-text">Download the <strong>Dirty Dataset</strong> — give to students</div></div>
+        <div class="step-row"><div class="step-num">4</div>
+            <div class="step-text">Download the <strong>Answer Key</strong> — keep for grading</div></div>
+        <div class="step-row"><div class="step-num">5</div>
+            <div class="step-text">Change the seed each semester for a fresh version</div></div>
+    </div>
+    <hr class="sb-rule">
+    """, unsafe_allow_html=True)
+
+    # Error reference
+    st.markdown("""
+    <div class="sb-section">
+        <div class="sb-heading"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>Error Reference</div>
+        <table class="err-tbl">
+            <tr><th>Error Type</th><th>Level</th></tr>
+            <tr><td>Blank Claim ID</td><td><span class="lv-e">Easy</span></td></tr>
+            <tr><td>Blank Transaction Date</td><td><span class="lv-e">Easy</span></td></tr>
+            <tr><td>Mixed Date Format</td><td><span class="lv-e">Easy</span></td></tr>
+            <tr><td>Misspelled Transaction</td><td><span class="lv-e">Easy</span></td></tr>
+            <tr><td>Wrong Capitalization</td><td><span class="lv-m">Medium</span></td></tr>
+            <tr><td>Missing Negative Sign</td><td><span class="lv-m">Medium</span></td></tr>
+            <tr><td>Logical Date Violation</td><td><span class="lv-h">Hard</span></td></tr>
+        </table>
+        <div class="sb-body" style="margin-top:0.45rem; font-size:0.74rem; color:#64748B;">
+            Hard errors require domain knowledge and are not reliably caught by AI —
+            useful for classroom discussion.
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-with c2:
-    st.markdown("""
-    <div class="card">
-        <h3>💡 Why this approach</h3>
-        <p>
-            Starting from a <em>known</em> clean dataset lets students validate their
-            own corrections against a ground truth — something you can't do with
-            naturally dirty data.
-        </p>
-        <p style="margin-top:0.6rem;">
-            Errors are scattered throughout the existing rows, not appended at the
-            bottom, so students must actually audit the data rather than simply
-            filtering by row position.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ── How to use ─────────────────────────────────────────────────────────────────
-
-st.markdown('<div class="section-title">How to use this tool</div>', unsafe_allow_html=True)
+# ── Main panel ─────────────────────────────────────────────────────────────────
 
 st.markdown("""
-<div class="card">
-    <p><span class="step">1</span><strong>Pick a seed number</strong> below — any number works.
-       The same seed always produces the same errors, so you can reproduce any version exactly.</p>
-    <p><span class="step">2</span><strong>Click Generate.</strong>
-       The tool injects errors and shows you a summary of what was changed.</p>
-    <p><span class="step">3</span><strong>Download the Dirty Dataset</strong> and distribute it to students.</p>
-    <p><span class="step">4</span><strong>Download the Answer Key</strong> (CSV) and keep it for grading.
-       It lists every injected error with the Excel row, column, original value, and injected value.</p>
-    <p><span class="step">5</span><strong>Next semester</strong>, change the seed number and repeat.
-       Fresh error distribution, same clean source — no manual work needed.</p>
+<div class="panel-header">
+    <div class="panel-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+    <div class="panel-title">Dataset Generator</div>
 </div>
 """, unsafe_allow_html=True)
 
-# ── Error type guide ───────────────────────────────────────────────────────────
-
-with st.expander("📖 Error type reference — what students will encounter"):
-    st.markdown("""
-    <table class="err-table">
-        <tr>
-            <th>Error Type</th>
-            <th>Example</th>
-            <th>Difficulty</th>
-            <th>Why it matters</th>
-        </tr>
-        <tr>
-            <td><strong>Blank Claim ID</strong></td>
-            <td>Cell is empty</td>
-            <td><span class="badge-easy">Easy</span></td>
-            <td>Orphaned records that can't be joined to other tables</td>
-        </tr>
-        <tr>
-            <td><strong>Blank Transaction Date</strong></td>
-            <td>Cell is empty</td>
-            <td><span class="badge-easy">Easy</span></td>
-            <td>Breaks any time-series or development period calculation</td>
-        </tr>
-        <tr>
-            <td><strong>Mixed Date Format</strong></td>
-            <td>"Jan 05 2020" vs "2020-01-05"</td>
-            <td><span class="badge-easy">Easy</span></td>
-            <td>Silent parsing errors — some tools read wrong date, others fail</td>
-        </tr>
-        <tr>
-            <td><strong>Misspelled Transaction</strong></td>
-            <td>"Reseve Change", "Piad Loss"</td>
-            <td><span class="badge-easy">Easy</span></td>
-            <td>Causes incorrect group-by counts and aggregation errors</td>
-        </tr>
-        <tr>
-            <td><strong>Wrong Capitalization</strong></td>
-            <td>"reserve change", "PAID LOSS"</td>
-            <td><span class="badge-medium">Medium</span></td>
-            <td>Looks correct to the eye; breaks case-sensitive filters</td>
-        </tr>
-        <tr>
-            <td><strong>Missing Negative Sign</strong></td>
-            <td>Reserve takedown shown as positive</td>
-            <td><span class="badge-medium">Medium</span></td>
-            <td>Inflates total incurred loss figures; requires domain knowledge to spot</td>
-        </tr>
-        <tr>
-            <td><strong>Logical Date Violation</strong></td>
-            <td>Transaction Date before Accident Date</td>
-            <td><span class="badge-hard">Hard</span></td>
-            <td>Impossible in claims data; AI tools sometimes miss it — good class discussion</td>
-        </tr>
-    </table>
-    <p style="font-size:0.82rem; color:#6B7280; margin-top:0.8rem;">
-        The logical date violation is intentionally the hardest. It requires domain knowledge,
-        not just format checks, and is a reliable way to start a conversation about
-        what AI tools can and cannot be trusted to catch on their own.
-    </p>
-    """, unsafe_allow_html=True)
-
-# ── Generator ──────────────────────────────────────────────────────────────────
-
-st.markdown('<div class="section-title">Generate your dataset</div>', unsafe_allow_html=True)
-
-col1, col2 = st.columns([3, 1])
-with col1:
+# Seed row
+c_seed, c_btn = st.columns([4, 1])
+with c_seed:
     seed = st.number_input(
         "Seed number",
-        min_value=1,
-        max_value=99999,
-        value=42,
+        min_value=1, max_value=99999,
+        value=st.session_state.get("seed", 42),
         step=1,
-        help="Change this each semester. Same seed = same errors, so you can always reproduce a prior version.",
+        label_visibility="collapsed",
+        help="Same seed = same errors every time. Change each semester for a fresh version.",
     )
-with col2:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🎲 Randomize", use_container_width=True):
+with c_btn:
+    if st.button("Shuffle", icon=":material/shuffle:", use_container_width=True):
         st.session_state["seed"] = random.randint(100, 99999)
         st.rerun()
 
-if "seed" in st.session_state:
-    seed = st.session_state["seed"]
+st.caption(f"Seed **{int(seed)}** — the same seed always reproduces the same error distribution.")
 
-with st.expander("⚙️ Advanced: adjust error rates"):
-    st.caption("Default rates are calibrated for a 50-minute class exercise. Adjust only if you want more or fewer of a specific error type.")
+# Advanced rates
+with st.expander("Advanced — adjust error rates", icon=":material/tune:"):
+    st.caption("Defaults are calibrated for a 50-minute exercise. Adjust only if needed.")
     rates = {}
-    for key, label in ERROR_LABELS.items():
-        rates[key] = st.slider(
-            label,
-            min_value=0.0,
-            max_value=0.10,
-            value=DEFAULT_RATES[key],
-            step=0.005,
-            format="%.1%%",
-            key=key,
-        )
+    left, right = st.columns(2)
+    items = list(ERROR_LABELS.items())
+    for i, (key, label) in enumerate(items):
+        col = left if i % 2 == 0 else right
+        with col:
+            rates[key] = st.slider(
+                label, min_value=0.0, max_value=0.10,
+                value=DEFAULT_RATES[key], step=0.005,
+                format="%.1%%", key=key,
+            )
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='height:0.3rem'></div>", unsafe_allow_html=True)
 
-if st.button("⚡  Generate Dataset", type="primary", use_container_width=True):
-    with st.spinner("Injecting errors into the dataset…"):
+if st.button("Generate Dataset", type="primary", use_container_width=True,
+             icon=":material/play_arrow:"):
+    with st.spinner("Injecting errors…"):
         dirty_df, manifest = generate(seed=int(seed), rates=rates)
 
     total    = len(manifest)
@@ -256,10 +221,31 @@ if st.button("⚡  Generate Dataset", type="primary", use_container_width=True):
     by_label = manifest.groupby("error_label").size().reset_index(name="Count")
     by_label = by_label.rename(columns={"error_label": "Error Type"})
 
-    st.success(f"✅  Ready — **{total} errors** injected across {pct:.1f}% of rows  |  Seed: **{int(seed)}**")
-    st.dataframe(by_label, hide_index=True, use_container_width=True)
+    # Summary cards
+    st.markdown(f"""
+    <div class="result-cards">
+        <div class="r-card">
+            <div class="r-card-num">{total}</div>
+            <div class="r-card-lbl">Errors Injected</div>
+        </div>
+        <div class="r-card">
+            <div class="r-card-num">{pct:.1f}%</div>
+            <div class="r-card-lbl">Rows Affected</div>
+        </div>
+        <div class="r-card">
+            <div class="r-card-num">2,279</div>
+            <div class="r-card-lbl">Total Rows</div>
+        </div>
+        <div class="r-card">
+            <div class="r-card-num">{int(seed)}</div>
+            <div class="r-card-lbl">Seed Used</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown("#### Download your files")
+    st.dataframe(by_label, hide_index=True, use_container_width=True, height=284)
+
+    # Downloads
     dl1, dl2 = st.columns(2)
 
     excel_buf = io.BytesIO()
@@ -270,11 +256,12 @@ if st.button("⚡  Generate Dataset", type="primary", use_container_width=True):
 
     with dl1:
         st.download_button(
-            label="📥  Dirty Dataset (.xlsx)",
+            label="Dirty Dataset (.xlsx)",
             data=excel_buf,
             file_name=f"Loss_Transactions_DIRTY_seed{int(seed)}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
+            icon=":material/download:",
             help="Distribute this file to students.",
         )
 
@@ -283,22 +270,11 @@ if st.button("⚡  Generate Dataset", type="primary", use_container_width=True):
 
     with dl2:
         st.download_button(
-            label="🔑  Answer Key (.csv)",
+            label="Answer Key (.csv)",
             data=csv_buf.getvalue().encode(),
             file_name=f"error_manifest_seed{int(seed)}.csv",
             mime="text/csv",
             use_container_width=True,
-            help="Keep this file — it records every injected error for grading.",
+            icon=":material/key:",
+            help="Keep this — records every injected error for grading.",
         )
-
-    st.caption(
-        f"💾  Use seed **{int(seed)}** again at any time to reproduce this exact version of the dataset."
-    )
-
-# ── Footer ─────────────────────────────────────────────────────────────────────
-
-st.divider()
-st.caption(
-    "Loss Data Lab · Built for classroom use · "
-    "Source dataset: 2,279 loss transactions, 400 claims, 2020–2025"
-)
