@@ -4,7 +4,7 @@ import random
 import pandas as pd
 import streamlit as st
 
-from inject_errors import DEFAULT_RATES, generate, _apply_date_format
+from inject_errors import DEFAULT_RATES, generate, _apply_cell_formats
 
 # ── Page config ────────────────────────────────────────────────────────────────
 
@@ -165,7 +165,7 @@ if "results" in st.session_state:
             date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD",
         ) as writer:
             dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
-            _apply_date_format(writer.sheets["Loss Transactions"])
+            _apply_cell_formats(writer.sheets["Loss Transactions"])
         excel_buf.seek(0)
 
         st.download_button(
@@ -205,7 +205,7 @@ if "results" in st.session_state:
     preview_df = dirty_df.copy()
     for col in ("Accident Date", "Transaction Date"):
         preview_df[col] = preview_df[col].apply(
-            lambda v: v.strftime("%Y-%m-%d") if hasattr(v, "strftime") else v
+            lambda v: v.strftime("%m-%d-%y") if (hasattr(v, "strftime") and not pd.isna(v)) else v
         )
 
     st.dataframe(preview_df, hide_index=False, use_container_width=True, height=400)

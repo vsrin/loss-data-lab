@@ -189,13 +189,18 @@ def generate(seed: int = 42, rates: dict = None):
 
 # ── Excel date formatting helper ──────────────────────────────────────────────
 
-def _apply_date_format(ws):
-    """Apply YYYY-MM-DD number format to datetime cells in date columns A and C.
-    Skips string cells (intentional mixed-format errors) and blank cells."""
+def _apply_cell_formats(ws):
+    """Mirror the original file's cell formats:
+      - Dates (cols A, C): mm-dd-yy
+      - Amount (col E):    #,##0  (comma-separated, no decimals)
+    String cells (intentional mixed-format errors) and blanks are left untouched."""
     for row in ws.iter_rows(min_row=4, max_row=ws.max_row):
-        for cell in (row[0], row[2]):   # col A = Accident Date, col C = Transaction Date
+        for cell in (row[0], row[2]):       # Accident Date, Transaction Date
             if hasattr(cell.value, "strftime"):
-                cell.number_format = "YYYY-MM-DD"
+                cell.number_format = "mm-dd-yy"
+        amount_cell = row[4]                # Amount
+        if amount_cell.value is not None:
+            amount_cell.number_format = "#,##0"
 
 
 # ── CLI entry point ────────────────────────────────────────────────────────────
@@ -210,7 +215,7 @@ def main():
     with pd.ExcelWriter(output_dirty, engine="openpyxl",
                         date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD") as writer:
         dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
-        _apply_date_format(writer.sheets["Loss Transactions"])
+        _apply_cell_formats(writer.sheets["Loss Transactions"])
 
     manifest.to_csv(output_manifest, index=False)
 
