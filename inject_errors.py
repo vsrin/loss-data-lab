@@ -187,6 +187,17 @@ def generate(seed: int = 42, rates: dict = None):
     return df, manifest
 
 
+# ── Excel date formatting helper ──────────────────────────────────────────────
+
+def _apply_date_format(ws):
+    """Apply YYYY-MM-DD number format to datetime cells in date columns A and C.
+    Skips string cells (intentional mixed-format errors) and blank cells."""
+    for row in ws.iter_rows(min_row=4, max_row=ws.max_row):
+        for cell in (row[0], row[2]):   # col A = Accident Date, col C = Transaction Date
+            if hasattr(cell.value, "strftime"):
+                cell.number_format = "YYYY-MM-DD"
+
+
 # ── CLI entry point ────────────────────────────────────────────────────────────
 
 def main():
@@ -199,6 +210,7 @@ def main():
     with pd.ExcelWriter(output_dirty, engine="openpyxl",
                         date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD") as writer:
         dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
+        _apply_date_format(writer.sheets["Loss Transactions"])
 
     manifest.to_csv(output_manifest, index=False)
 

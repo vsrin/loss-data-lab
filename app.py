@@ -4,7 +4,7 @@ import random
 import pandas as pd
 import streamlit as st
 
-from inject_errors import DEFAULT_RATES, generate
+from inject_errors import DEFAULT_RATES, generate, _apply_date_format
 
 # ── Page config ────────────────────────────────────────────────────────────────
 
@@ -165,6 +165,7 @@ if "results" in st.session_state:
             date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD",
         ) as writer:
             dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
+            _apply_date_format(writer.sheets["Loss Transactions"])
         excel_buf.seek(0)
 
         st.download_button(
