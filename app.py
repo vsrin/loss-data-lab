@@ -192,3 +192,20 @@ if "results" in st.session_state:
         )
 
         st.caption(f"Seed **{used_seed}** — use this number anytime to reproduce this exact version.")
+
+    st.divider()
+    st.markdown("#### Dataset Preview")
+    st.caption(
+        f"Showing all {len(dirty_df):,} rows. "
+        "Errors are scattered throughout — scroll to explore. "
+        "The Answer Key identifies every affected row by number."
+    )
+
+    # Format date columns as strings for clean display (avoids timestamp rendering)
+    preview_df = dirty_df.copy()
+    for col in ("Accident Date", "Transaction Date"):
+        preview_df[col] = preview_df[col].apply(
+            lambda v: v.strftime("%Y-%m-%d") if hasattr(v, "strftime") else v
+        )
+
+    st.dataframe(preview_df, hide_index=False, use_container_width=True, height=400)
