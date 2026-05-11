@@ -164,7 +164,7 @@ if "results" in st.session_state:
             excel_buf, engine="openpyxl",
             date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD",
         ) as writer:
-            dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions")
+            dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
         excel_buf.seek(0)
 
         st.download_button(

@@ -198,7 +198,7 @@ def main():
 
     with pd.ExcelWriter(output_dirty, engine="openpyxl",
                         date_format="YYYY-MM-DD", datetime_format="YYYY-MM-DD") as writer:
-        dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions")
+        dirty_df.to_excel(writer, index=False, sheet_name="Loss Transactions", startrow=2)
 
     manifest.to_csv(output_manifest, index=False)
 
