@@ -244,8 +244,6 @@ with st.expander("⚙️ Advanced: adjust error rates"):
             format="%.1%%",
             key=key,
         )
-else:
-    rates = DEFAULT_RATES
 
 st.markdown("<br>", unsafe_allow_html=True)
 
