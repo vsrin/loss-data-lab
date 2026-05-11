@@ -4,7 +4,7 @@ import random
 import pandas as pd
 import streamlit as st
 
-from inject_errors import DEFAULT_RATES, ERROR_LABELS, generate
+from inject_errors import DEFAULT_RATES, generate
 
 # ── Page config ────────────────────────────────────────────────────────────────
 
@@ -115,23 +115,12 @@ with right_col:
 
     st.caption(f"Seed **{int(seed)}** — the same seed always reproduces the same errors.")
 
-    with st.expander("Advanced — adjust error rates", icon=":material/tune:"):
-        st.caption("Defaults are calibrated for a 50-minute class exercise.")
-        rates = {}
-        ra, rb = st.columns(2)
-        for i, (key, label) in enumerate(ERROR_LABELS.items()):
-            with (ra if i % 2 == 0 else rb):
-                rates[key] = st.slider(
-                    label, 0.0, 0.10, DEFAULT_RATES[key], 0.005,
-                    format="%.1%%", key=key,
-                )
-
     st.markdown(" ")
 
     if st.button("Generate Dataset", type="primary", use_container_width=True,
                  icon=":material/play_arrow:"):
         with st.spinner("Injecting errors…"):
-            dirty_df, manifest = generate(seed=int(seed), rates=rates)
+            dirty_df, manifest = generate(seed=int(seed), rates=DEFAULT_RATES)
         st.session_state["results"] = {
             "dirty_df": dirty_df,
             "manifest": manifest,
